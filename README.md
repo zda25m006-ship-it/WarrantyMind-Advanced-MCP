@@ -11,24 +11,114 @@
 
 ---
 
+---
+
 ## Table of Contents
 
-1. [Overview & Key Features](#overview--key-features)
-2. [Architecture Overview](#architecture-overview)
-3. [System Flowchart — End-to-End Case Lifecycle](#system-flowchart--end-to-end-case-lifecycle)
-4. [Component Deep-Dive](#component-deep-dive)
-5. [MCP Architecture Deep-Dive](#mcp-architecture-deep-dive)
-6. [Data Flow Diagrams](#data-flow-diagrams)
-7. [Case Workflow States](#case-workflow-states)
-8. [Role-Based Access Control](#role-based-access-control)
-9. [Environment Configuration](#environment-configuration)
-10. [Installation & Quick Start](#installation--quick-start)
-11. [Running with Docker](#running-with-docker)
-12. [API Reference](#api-reference)
-13. [Demo Credentials](#demo-credentials)
-14. [Project Structure](#project-structure)
-15. [Testing](#testing)
-16. [Safety & Guardrails](#safety--guardrails)
+1. [About the Project](#about-the-project)
+   - [Executive Summary](#executive-summary)
+   - [The Problem We Solve](#the-problem-we-solve)
+   - [The WarrantyMind Solution](#the-warrantymind-solution)
+   - [Core Design Principles & Philosophy](#core-design-principles--philosophy)
+   - [Stakeholder Personas & Value Matrix](#stakeholder-personas--value-matrix)
+2. [Overview & Key Features](#overview--key-features)
+3. [Architecture Overview](#architecture-overview)
+4. [System Flowchart — End-to-End Case Lifecycle](#system-flowchart--end-to-end-case-lifecycle)
+5. [Component Deep-Dive](#component-deep-dive)
+6. [MCP Architecture Deep-Dive](#mcp-architecture-deep-dive)
+7. [Data Flow Diagrams](#data-flow-diagrams)
+8. [Case Workflow States](#case-workflow-states)
+9. [Role-Based Access Control](#role-based-access-control)
+10. [Environment Configuration](#environment-configuration)
+11. [Installation & Quick Start](#installation--quick-start)
+12. [Running with Docker](#running-with-docker)
+13. [API Reference](#api-reference)
+14. [Demo Credentials](#demo-credentials)
+15. [Project Structure](#project-structure)
+16. [Testing](#testing)
+17. [Safety & Guardrails](#safety--guardrails)
+
+---
+
+## About the Project
+
+### Executive Summary
+
+**WarrantyMind** is an advanced, production-grade agentic AI warranty resolution platform engineered specifically for consumer electronics, with first-class specialization for **Google Pixel devices** (Pixel 6 through Pixel 9 Pro Fold). 
+
+Modern device warranty processing is notoriously broken: customers wait weeks navigating disjointed support portals, service centers battle inconsistent hardware evaluations, and manufacturers hemorrhage billions through warranty fraud or mishandled adjudications. 
+
+WarrantyMind transforms this paradigm by deploying a synchronized multi-agent cognitive architecture adhering to the **Model Context Protocol (MCP)**. It automates device damage verification, invoice validation, policy retrieval, OEM advisory research, and technician slot reservations—all while enforcing strict **Human-in-the-Loop (HITL)** governance so that no binding financial or warranty claim decision is made without authorized human oversight.
+
+---
+
+### The Problem We Solve
+
+Consumer electronics warranty operations face four acute systemic bottlenecks:
+
+1. **Subjective & Error-Prone Damage Assessment**:
+   Customers upload blurry, uncalibrated photos. Traditional claim workflows rely on overworked Tier-1 support reps who cannot reliably distinguish between harmless cosmetic scuffs, deep hairline screen fractures, liquid contact indicator (LCI) triggering, or battery swelling.
+2. **Opaque & Complex Policy Clauses**:
+   Warranty manuals span dozens of dense clauses with subtle geographic exemptions (e.g., standard 1-year limited warranties vs. extended coverage programs for Pixel 8 display banding or Pixel 7 battery bulges). Customers and agents routinely misapply terms, leading to erroneous denials or costly wrongful approvals.
+3. **Disjointed Web & Community Research**:
+   Known hardware defects (e.g., recurring display flickering or camera lens spontaneous cracking) often trend across Google Issue Trackers, Reddit, and XDA weeks before formal recall bulletins. Frontline reps have zero real-time visibility into these active community advisories.
+4. **Friction in Service Center Handoffs**:
+   Online triage rarely connects cleanly with walk-in repair depots. Customers arrive without diagnostic pre-briefs, slots get double-booked, and physical technician findings fail to loop back into the core adjudicator.
+
+---
+
+### The WarrantyMind Solution
+
+WarrantyMind resolves these pain points through a fully integrated, transparent, five-tier pipeline:
+
+```
+[Customer Upload]  -->  [Vision & OCR MCP]  -->  [Dual-Stream Research]
+                              |                           |
+                              v                           v
+                       [Pixel Telemetry]          [Known Bug Matches]
+                              \                           /
+                               v                         v
+                       [Policy RAG]  -->  [LLM Diagnostic Agent]
+                                                  |
+                                                  v
+                                      [Interactive Interview]
+                                                  |
+                                                  v
+                                      [HITL Adjudication Gate]
+                                                  |
+                                                  v
+                                    [Technician Slot Booking]
+```
+
+- **Multimodal Visual Evidence**: Combines local Ollama Vision Models (`gemma4:e2b` / vision LLMs) with PIL-based pixel telemetry (analyzing blur, brightness, edge variance, and color histograms) to validate physical condition and cross-reference device serial numbers against proof-of-purchase invoices.
+- **Lexical Policy RAG (Zero Hallucination)**: Completely avoids ungrounded vector drift by utilizing deterministic SQLite lexical querying across genuine Google Pixel warranty clauses and extended repair programs.
+- **Dual-Stream Live Research**: Queries official Google Support advisories and enthusiast forum threads in parallel via Brave Search, constrained by rigorous domain allowlisting.
+- **Interactive Diagnostic Interview**: When evidence is ambiguous, an autonomous diagnostic interview agent synthesizes targeted follow-up questions tailored to the exact symptom pattern before rendering recommendations.
+- **Atomic Service Center Orchestration**: Links digital adjudication directly to physical repair center capacity via atomic SQLite slot reservations (`BEGIN IMMEDIATE`), complete with repair estimate sheets.
+
+---
+
+### Core Design Principles & Philosophy
+
+1. **AI Proposes, Humans Decide (Responsible AI)**:
+   The system never auto-rejects or auto-approves warranties behind closed doors. The engine acts as an expert investigative co-pilot that produces structured adjudication briefs, cost breakdowns, and policy citations—requiring human agents or certified technicians to sign off.
+2. **Model Context Protocol (MCP) Decoupling**:
+   Every analytical tool (Vision, Web Research, Policy Store, Operations) runs as a standalone MCP server with standardized JSON-RPC protocols. Tools can be audited, scaled, or swapped independently of the orchestrator.
+3. **Local-First Privacy & Cost Efficiency**:
+   Designed to execute locally or in hybrid clouds via Ollama, preventing proprietary customer device photos and private purchase invoices from leaking to closed third-party cloud APIs.
+4. **Deterministic & Auditable State Machine**:
+   Every case transition is logged as an immutable state event with cryptographic token sessions, granular RBAC, and full outbox event dispatching.
+
+---
+
+### Stakeholder Personas & Value Matrix
+
+| Persona | Primary Needs & Pain Points | How WarrantyMind Delivers |
+|---|---|---|
+| **Claimant (Device Owner)** | Wants fast, clear answers without waiting on hold; needs simple photo upload and local appointment scheduling. | Instant AI triage, guided diagnostic questionnaire, transparent policy citations, and instant appointment booking in under 3 minutes. |
+| **Support Agent** | Overwhelmed by ticket volume; struggles to verify invoice authenticity and cross-reference obscure warranty clauses. | Pre-assembled diagnostic summaries, OCR invoice cross-checks, highlighted policy matches, and single-click approval/escalation. |
+| **Service Center Technician** | Receives devices with vague descriptions; needs standardized physical inspection worksheets and parts catalog. | Comprehensive incoming device packet, structured physical inspection submission form, and automated cost estimation. |
+| **OEM / Operations Lead** | Needs to curtail warranty fraud, maintain brand loyalty, track recurring component failures, and audit claim workflows. | Strict anti-tampering heuristics, real-time analytics on trending device defects, and a tamper-proof SQLite audit trail. |
 
 ---
 
