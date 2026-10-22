@@ -1,0 +1,12 @@
+# Optional production stack upgrades
+mcp>=1.4.0
+langgraph>=0.3.0
+langgraph-checkpoint-postgres>=2.0.0
+langchain-mcp-adapters>=0.1.0
+qdrant-client>=1.11.0
+sentence-transformers>=3.0.0
+docling>=2.0.0
+psycopg[binary]>=3.1.0
+minio>=7.2.0
+ragas>=0.2.0
+langfuse>=2.40.0

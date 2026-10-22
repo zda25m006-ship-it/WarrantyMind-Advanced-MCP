@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WarrantyMind AI — Pixel Device Support</title>
+  <meta name="description" content="Google Pixel support with local Ollama image review, warranty research, diagnostic reasoning, and human case review.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Processing...</div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">🛡️</div>
+      <div>
+        <div class="topbar-title">WarrantyMind AI</div>
+        <div class="topbar-subtitle">Pixel support · Local AI · Warranty research · Human review</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="ollama-status-pill" class="status-pill" style="display:none;">
+        <span class="dot"></span>
+        <span id="ollama-status-text">Ollama</span>
+      </div>
+      <div id="user-bar" class="user-bar" style="display:none;">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div>
+          <div class="user-name" id="user-badge"></div>
+        </div>
+        <button class="ghost" onclick="logout()" style="margin-left:4px;">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ═══════════════════════════════════════════ LOGIN VIEW ═══════════════════ -->
+    <div id="login-view">
+      <div class="login-card">
+        <div class="login-logo">🛡️</div>
+        <h2>WarrantyMind AI</h2>
+        <p class="login-desc">
+          Pixel phone, Pixel Watch, and Pixelbook case support with Ollama vision, source research, and human review.
+        </p>
+
+        <div id="demo-accounts" class="quick-accounts">
+          <button type="button" class="teal" onclick="fillLogin('customer1','Customer123!')">👤 Customer</button>
+          <button type="button" class="secondary" onclick="fillLogin('technician1','Tech123!')">🔧 Technician</button>
+          <button type="button" class="warn" onclick="fillLogin('support1','Support123!')">🎧 Support</button>
+        </div>
+
+        <div class="login-divider">credentials</div>
+
+        <label>Username</label>
+        <input id="login-username" value="customer1" placeholder="Enter username" autocomplete="username">
+        <label>Password</label>
+        <input id="login-password" type="password" value="Customer123!" placeholder="Enter password" autocomplete="current-password">
+
+        <button class="login-btn-main" onclick="doLogin()" id="login-btn">
+          <span>Sign In</span> <span>→</span>
+        </button>
+        <div id="login-error">
+          <span>⚠️</span>
+          <span id="login-error-msg"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ MAIN APP VIEW ═════════════════ -->
+    <div id="app-view" style="display:none;">
+      <div class="workspace-shell">
+        <aside class="workspace-sidebar" aria-label="Main navigation">
+          <div class="sidebar-mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none">
+              <path d="M24 40V20M24 29C14 29 9 24 9 15c9 0 15 5 15 14ZM24 24c0-10 5-15 15-15 0 9-5 15-15 15ZM24 34c0-7 4-11 11-11 0 7-4 11-11 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="sidebar-brand-copy"><strong>WarrantyMind</strong><span>DEVICE CARE</span></div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-caption">YOUR WORKSPACE</div>
+          <nav class="side-nav">
+            <button class="side-nav-link active" type="button" onclick="goToWorkspaceSection('workspace-overview', this)"><span class="side-nav-icon">⌂</span>Overview</button>
+            <button class="side-nav-link" id="sidebar-new-case" type="button" onclick="goToWorkspaceSection('customer-intake-card', this)"><span class="side-nav-icon">＋</span>New case</button>
+            <button class="side-nav-link" type="button" onclick="goToWorkspaceSection('cases-list', this)"><span class="side-nav-icon">▤</span>My requests</button>
+            <button class="side-nav-link" type="button" onclick="goToWorkspaceSection('mcp-registry-view', this)"><span class="side-nav-icon">✧</span>AI &amp; tools</button>
+          </nav>
+          <div class="sidebar-note">
+            <span class="sidebar-note-icon">✦</span>
+            <strong>Care, made clearer</strong>
+            <p>Follow your repair journey from first photo to final service.</p>
+          </div>
+          <div class="sidebar-footer"><span class="sidebar-footer-dot"></span>Personal service workspace</div>
+        </aside>
+
+        <main class="workspace-main">
+          <section class="workspace-heading" id="workspace-overview">
+            <div>
+              <div class="workspace-eyebrow">WARRANTY DESK <span>•</span> OVERVIEW</div>
+              <h1>Welcome back, <span id="welcome-name">there</span></h1>
+              <p>Everything about your device care, in one calm place.</p>
+            </div>
+            <div class="workspace-date"><span class="date-sparkle">✧</span><span id="workspace-date">Your service overview</span></div>
+          </section>
+
+          <section class="overview-stats" aria-label="Warranty overview">
+            <article class="overview-stat stat-coral">
+              <div class="stat-topline"><span>Service requests</span><span class="stat-icon">▤</span></div>
+              <strong id="metric-cases">—</strong>
+              <small>Cases in your workspace</small>
+            </article>
+            <article class="overview-stat stat-sage">
+              <div class="stat-topline"><span>Your next steps</span><span class="stat-icon">↗</span></div>
+              <strong id="metric-actions">—</strong>
+              <small>Waiting for your response</small>
+            </article>
+            <article class="overview-stat stat-lilac">
+              <div class="stat-topline"><span>Photo review</span><span class="stat-icon">✧</span></div>
+              <strong id="metric-vision">Checking</strong>
+              <small id="metric-vision-copy">Vision service status</small>
+            </article>
+          </section>
+
+          <div class="grid-2">
+
+        <!-- ── LEFT COLUMN ── -->
+        <div>
+
+          <!-- Customer Intake Card -->
+          <div id="customer-intake-card" class="card" style="display:none;">
+            <h2><span class="icon blue">📋</span>New Device Issue &amp; Evidence Intake</h2>
+
+            <label>Registered Device Order</label>
+            <select id="order-select"></select>
+
+            <label>Primary Symptom Category</label>
+            <select id="symptom-select" onchange="prefillSymptomSample()">
+              <option value="Green display line or flicker">🟢 Green vertical OLED line (Test VLM + Interview)</option>
+              <option value="Pixelbook display flicker">💡 Pixelbook display flickering</option>
+              <option value="Cracked screen or visible damage">🔴 Cracked screen &amp; chassis dent (Physical Damage)</option>
+              <option value="Rapid battery drain and thermal warning">🔋 Rapid battery drain &amp; thermal warning</option>
+            </select>
+
+            <label>Detailed Complaint Description</label>
+            <textarea id="complaint-text" rows="3">My Google Pixel screen has developed a vertical green line. I have not dropped the device.</textarea>
+
+            <label>Device Photographs (JPEG/PNG — VLM Pixel &amp; Symptom Inspection)</label>
+            <div class="file-upload-zone" id="upload-zone">
+              <input id="photo-files" type="file" multiple accept="image/*" onchange="updateFileLabel()">
+              <div class="upload-icon">📷</div>
+              <div class="upload-text"><strong>Click to upload</strong> or drag &amp; drop photos</div>
+              <div id="file-label" style="font-size:0.72rem; color:var(--accent-blue-bright); margin-top:6px;"></div>
+            </div>
+
+            <label>Optional Invoice JSON / Docling Text</label>
+            <textarea id="invoice-json" rows="2" placeholder='Optional: {"invoice_number":"INV-2026-8821","serial_number":"SN-PIXEL9P-99412"}'></textarea>
+
+            <button onclick="submitNewCase()" id="submit-case-btn" style="width:100%; justify-content:center; margin-top:14px;">
+              🔍 Analyze Complaint &amp; Start Diagnostic Interview
+            </button>
+          </div>
+
+          <!-- Active Cases -->
+          <div class="card">
+            <h2><span class="icon teal">📂</span>Active Service Cases</h2>
+            <div id="cases-list">
+              <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <div class="empty-state-text">No cases yet. Submit a complaint above.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MCP Registry -->
+          <div class="card">
+            <h2><span class="icon violet">⚙️</span>AI &amp; Research Connections</h2>
+            <div id="mcp-registry-view">
+              <div class="empty-state" style="padding:12px;">
+                <div class="spinner" style="margin:0 auto 8px;"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT COLUMN ── -->
+        <div>
+          <div id="case-detail-card" class="card">
+            <h2><span class="icon blue">🔬</span>Case Investigation &amp; Lifecycle Workspace</h2>
+            <div class="empty-state" style="padding:40px 16px;">
+              <div class="empty-state-icon">🛡️</div>
+              <div class="empty-state-text" style="font-size:0.9rem; color:var(--text-secondary);">
+                Select or create a case to inspect image findings, answer diagnostic questions,<br>review source material, and request a demo service review.
+              </div>
+            </div>
+          </div>
+        </div>
+
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
